@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools >= 61.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "cocotblib"
+]
+
+[project]
+name = "cocotblib"
+authors = [{name = "Zero ASIC"}]
+description = "Library of useful cocotb functions"
+readme = "README.md"
+urls = {Homepage = "https://github.com/zeroasiccorp/cocotblib"}
+requires-python = ">= 3.10"
+license = {file = "LICENSE"}
+dependencies = [
+      ]
+dynamic = ['version']
+
+[tool.setuptools.dynamic]
+version = {attr = "cocotblib.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+timeout = "60"
+
+[project.optional-dependencies]
+test = [
+    "flake8 >= 5.0.0",
+    "pytest >= 6.2.4",
+    "pytest-timeout >= 2.1.0"
+]
