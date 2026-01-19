@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 include-package-data = true
-packages = [
-    "cocotblib"
-]
+
+[tool.setuptools.packages.find]
+namespaces = false
 
 [project]
 name = "za-cocotblib"
@@ -25,6 +25,7 @@ dynamic = ['version']
 
 [tool.setuptools.dynamic]
 version = {attr = "cocotblib.__version__"}
+
 
 [tool.pytest.ini_options]
 testpaths = "tests"
