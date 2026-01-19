@@ -1,27 +1,18 @@
 import os
-from pathlib import Path
-from typing import List, Tuple, Optional, Mapping, Union
+import math
+import string
+from typing import Optional, List, Tuple, Mapping, Union
 
-from siliconcompiler import Sim
+import random
+from pathlib import Path
+from decimal import Decimal
 
 from cocotb.triggers import Timer
-from cocotb.handle import SimHandleBase
-
-from cocotb_tools.runner import get_runner, VerilatorControlFile
+from cocotb_tools.runner import get_runner
 from cocotb_tools.check_results import get_results
 
 
-async def do_reset(
-        reset: SimHandleBase,
-        time_ns: int,
-        active_level: bool = False):
-    """Perform a async reset"""
-    reset.value = not active_level
-    await Timer(1, unit="step")
-    reset.value = active_level
-    await Timer(time_ns, "ns")
-    reset.value = not active_level
-    await Timer(1, unit="step")
+from siliconcompiler import Sim
 
 
 def run_cocotb(
@@ -39,12 +30,15 @@ def run_cocotb(
     if parameters is None:
         parameters = {}
 
+    if not build_args:
+        build_args = []
+
     if output_dir_name is None:
         output_dir_name = test_module_name
 
     pytest_current_test = os.getenv("PYTEST_CURRENT_TEST", None)
 
-    rootpath = Path(__file__).resolve().parent.parent
+    rootpath = Path(__file__).resolve().parent.parent.parent.parent
     top_level_dir = rootpath
     build_dir = rootpath / "build" / output_dir_name
     test_dir = None
@@ -82,7 +76,7 @@ def run_cocotb(
     if simulator_name == "verilator":
         for lib, fileset in filesets:
             for value in lib.get_file(fileset=fileset, filetype="verilatorctrlfile"):
-                vlt_files.append(VerilatorControlFile(value))
+                vlt_files.append(value)
 
     # Build HDL in chosen simulator
     runner = get_runner(simulator_name)
@@ -110,3 +104,42 @@ def run_cocotb(
     ))
 
     return tests_failed
+
+
+def random_decimal(max: int, min: int, decimal_places=2) -> Decimal:
+    prefix = str(random.randint(min, max))
+    suffix = ''.join(random.choice(string.digits) for _ in range(decimal_places))
+    return Decimal(prefix + "." + suffix)
+
+
+async def drive_reset(reset, reset_time_in_ns=100, active_level=False):
+    """Perform a async reset"""
+    reset.value = not active_level
+    await Timer(1, unit="step")
+    reset.value = active_level
+    await Timer(reset_time_in_ns, "ns")
+    reset.value = not active_level
+    await Timer(1, unit="step")
+
+
+def random_toggle_generator(on_range=(0, 15), off_range=(0, 15)):
+    return bit_toggler_generator(
+        gen_on=(random.randint(*on_range) for _ in iter(int, 1)),
+        gen_off=(random.randint(*off_range) for _ in iter(int, 1))
+    )
+
+
+def sine_wave_generator(amplitude, w, offset=0):
+    while True:
+        for idx in (i / float(w) for i in range(int(w))):
+            yield amplitude * math.sin(2 * math.pi * idx) + offset
+
+
+def bit_toggler_generator(gen_on, gen_off):
+    for n_on, n_off in zip(gen_on, gen_off):
+        yield int(abs(n_on)), int(abs(n_off))
+
+
+def wave_generator(on_ampl=30, on_freq=200, off_ampl=10, off_freq=100):
+    return bit_toggler_generator(sine_wave_generator(on_ampl, on_freq),
+                                 sine_wave_generator(off_ampl, off_freq))
