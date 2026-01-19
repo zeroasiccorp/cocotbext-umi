@@ -20,18 +20,13 @@ jobs:
   publish:
     needs: [build_wheels]
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
     if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
-    - uses: actions/download-artifact@v5
+    - uses: zeroasiccorp/za_pypi/.github/actions/add@main
       with:
-        name: Packages
-        path: dist
-
-    - name: Publish
-      uses: pypa/gh-action-pypi-publish@v1.13.0
+        token: ${{ secrets.ZA_TOKEN }}
+        package_name: cocotblib
 
   save:
     needs: [publish]
