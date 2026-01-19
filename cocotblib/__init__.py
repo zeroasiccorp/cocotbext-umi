@@ -3,6 +3,6 @@
 __version__ = "0.0.1"
 
 # Sub-modules
-# from logikbench import basic
+from .umi import sumi, tumi
 
-# __all__ = ["basic"]
+__all__ = ["sumi", "tumi"]
