@@ -3,8 +3,8 @@ from typing import Optional
 import dataclasses
 import copy
 
-from cocotblib.bit_utils import BitField, BitVector
-from cocotblib.vrd_transaction import VRDTransaction
+from cocotbext.umi.utils.bit_utils import BitField, BitVector
+from cocotbext.umi.utils.vrd_transaction import VRDTransaction
 
 
 class SumiCmdType(IntEnum):

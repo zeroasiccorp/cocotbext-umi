@@ -6,7 +6,7 @@ from cocotb.handle import SimHandleBase
 
 from cocotb_bus.drivers import ValidatedBusDriver
 
-from cocotblib.umi.sumi import SumiTransaction
+from cocotbext.umi.sumi import SumiTransaction
 
 
 class SumiDriver(ValidatedBusDriver):

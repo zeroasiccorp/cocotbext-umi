@@ -3,7 +3,7 @@ from cocotb.triggers import RisingEdge
 
 from cocotb_bus.monitors import BusMonitor
 
-from cocotblib.umi.sumi import SumiCmd, SumiTransaction
+from cocotbext.umi.sumi import SumiCmd, SumiTransaction
 
 
 class SumiMonitor(BusMonitor):
