@@ -1,5 +1,3 @@
-from typing import Optional
-
 from cocotbext.umi.sumi import SumiCmd, SumiCmdType, SumiTransaction
 from cocotbext.umi.drivers.sumi_driver import SumiDriver
 from cocotbext.umi.monitors.sumi_monitor import SumiMonitor
