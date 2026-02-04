@@ -1,4 +1,5 @@
 from cocotbext.umi.sumi import SumiCmd, SumiCmdType, SumiTransaction
+from cocotbext.umi.tumi import TumiTransaction
 from cocotbext.umi.drivers.sumi_driver import SumiDriver
 from cocotbext.umi.monitors.sumi_monitor import SumiMonitor
 
@@ -20,6 +21,9 @@ class UmiMemoryDevice:
         self.driver = driver
         self.log = log
         self.memory: dict[int, int] = {}
+
+        self.dw = self.driver.get_bus_width()
+        self.aw = self.driver.get_addr_width()
 
         self.monitor.add_callback(self._on_transaction)
 
@@ -91,14 +95,15 @@ class UmiMemoryDevice:
             len=length,
             eom=1
         )
-        resp = SumiTransaction(
+
+        tumi_trans = TumiTransaction(
             cmd=resp_cmd,
             da=int(transaction.sa),
             sa=int(transaction.da),
-            data=data,
-            addr_width=transaction._addr_width
+            data=data
         )
-        self.driver.append(resp)
+        for sumi_trans in tumi_trans.to_sumi(data_bus_size=self.dw//8, addr_width=self.aw):
+            self.driver.append(sumi_trans)
 
     def read(self, address: int, length: int = 1) -> bytes:
         """Read bytes from virtual memory directly."""

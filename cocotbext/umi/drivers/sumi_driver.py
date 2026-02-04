@@ -36,6 +36,15 @@ class SumiDriver(ValidatedBusDriver):
         self.clock = clock
         self.bus.valid.value = 0
 
+        self.addr_width = len(self.bus.dstaddr)
+        self.data_width = len(self.bus.data)
+
+    def get_bus_width(self) -> int:
+        return self.data_width
+
+    def get_addr_width(self) -> int:
+        return self.addr_width
+
     async def _driver_send(self, transaction: SumiTransaction, sync: bool = True) -> None:
         """Implementation for BusDriver.
         Args:

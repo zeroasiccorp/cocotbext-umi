@@ -21,6 +21,13 @@ class SumiMonitor(BusMonitor):
     def __init__(self, entity, name, clock, **kwargs):
         BusMonitor.__init__(self, entity, name, clock, **kwargs)
         self.addr_width = len(self.bus.dstaddr)
+        self.data_width = len(self.bus.data)
+
+    def get_bus_width(self) -> int:
+        return self.data_width
+
+    def get_addr_width(self) -> int:
+        return self.addr_width
 
     async def _monitor_recv(self):
         clk_re = RisingEdge(self.clock)
