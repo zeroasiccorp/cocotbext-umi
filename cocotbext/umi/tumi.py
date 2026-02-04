@@ -1,5 +1,5 @@
 from typing import List
-from cocotblib.umi.sumi import SumiCmd, SumiTransaction
+from cocotbext.umi.sumi import SumiCmd, SumiTransaction
 
 
 class TumiTransaction:
