@@ -8,7 +8,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Wheels cocotblib
+    name: Wheels cocotbext-umi
     runs-on: ubuntu-latest
 
     steps:
@@ -20,13 +20,18 @@ jobs:
   publish:
     needs: [build_wheels]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
-    - uses: zeroasiccorp/za_pypi/.github/actions/add@main
+    - uses: actions/download-artifact@v7
       with:
-        token: ${{ secrets.ZA_TOKEN }}
-        package_name: cocotblib
+        name: Packages
+        path: dist
+
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@v1.13.0
 
   save:
     needs: [publish]
