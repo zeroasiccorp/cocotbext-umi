@@ -1,3 +1,5 @@
+import copy
+
 from cocotbext.umi.sumi import SumiCmd, SumiCmdType, SumiTransaction
 from cocotbext.umi.tumi import TumiTransaction
 from cocotbext.umi.drivers.sumi_driver import SumiDriver
@@ -45,9 +47,7 @@ class UmiMemoryDevice:
         """Handle a write request by storing data and optionally sending response."""
         dstaddr = int(transaction.da)
         data = transaction.data
-        size = int(transaction.cmd.size)
-        length = int(transaction.cmd.len)
-        data_size = (length + 1) << size
+        data_size = transaction.cmd.total_bytes()
 
         if self.log:
             self.log.info(
@@ -59,17 +59,13 @@ class UmiMemoryDevice:
             self.memory[dstaddr + i] = data[i]
 
         if send_response:
-            resp_cmd = SumiCmd.from_fields(
-                cmd_type=SumiCmdType.UMI_RESP_WRITE,
-                size=0,
-                len=0,
-                eom=1
-            )
+            resp_cmd = copy.deepcopy(transaction.cmd)
+            resp_cmd.cmd_type.from_int(SumiCmdType.UMI_RESP_WRITE)
             resp = SumiTransaction(
                 cmd=resp_cmd,
                 da=int(transaction.sa),
                 sa=int(transaction.da),
-                data=bytes([0]),
+                data=transaction.data,
                 addr_width=transaction._addr_width
             )
             self.driver.append(resp)
@@ -77,9 +73,7 @@ class UmiMemoryDevice:
     def _handle_read(self, transaction: SumiTransaction):
         """Handle a read request by returning data from memory."""
         srcaddr = int(transaction.da)
-        size = int(transaction.cmd.size)
-        length = int(transaction.cmd.len)
-        data_size = (length + 1) << size
+        data_size = transaction.cmd.total_bytes()
 
         data = bytes(self.memory.get(srcaddr + i, 0) for i in range(data_size))
 
@@ -89,15 +83,10 @@ class UmiMemoryDevice:
                 f"data={data.hex()}"
             )
 
-        resp_cmd = SumiCmd.from_fields(
-            cmd_type=SumiCmdType.UMI_RESP_READ,
-            size=size,
-            len=length,
-            eom=1
-        )
-
         tumi_trans = TumiTransaction(
-            cmd=resp_cmd,
+            cmd=SumiCmd.from_fields(
+                cmd_type=SumiCmdType.UMI_RESP_READ
+            ),
             da=int(transaction.sa),
             sa=int(transaction.da),
             data=data
