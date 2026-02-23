@@ -24,7 +24,6 @@ class UmiMemoryDevice:
         self.log = log
         self.memory: dict[int, int] = {}
 
-        self.dw = self.driver.get_bus_width()
         self.aw = self.driver.get_addr_width()
 
         self.monitor.add_callback(self._on_transaction)
@@ -73,13 +72,14 @@ class UmiMemoryDevice:
     def _handle_read(self, transaction: SumiTransaction):
         """Handle a read request by returning data from memory."""
         srcaddr = int(transaction.da)
-        data_size = transaction.cmd.total_bytes()
+        total_requested_bytes = transaction.cmd.total_bytes()
+        req_size = transaction.cmd.bytes_per_word()
 
-        data = bytes(self.memory.get(srcaddr + i, 0) for i in range(data_size))
+        data = bytes(self.memory.get(srcaddr + i, 0) for i in range(total_requested_bytes))
 
         if self.log:
             self.log.info(
-                f"MEM READ: addr=0x{srcaddr:08x} size={data_size} "
+                f"MEM READ: addr=0x{srcaddr:08x} size={total_requested_bytes} "
                 f"data={data.hex()}"
             )
 
@@ -91,7 +91,7 @@ class UmiMemoryDevice:
             sa=int(transaction.da),
             data=data
         )
-        for sumi_trans in tumi_trans.to_sumi(data_bus_size=self.dw//8, addr_width=self.aw):
+        for sumi_trans in tumi_trans.to_sumi(data_bus_size=req_size, addr_width=self.aw):
             self.driver.append(sumi_trans)
 
     def read(self, address: int, length: int = 1) -> bytes:
