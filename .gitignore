@@ -11,6 +11,9 @@ a.out
 *.vvp
 *.f
 
+# setuptools_scm generated version file
+cocotbext/umi/_version.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
